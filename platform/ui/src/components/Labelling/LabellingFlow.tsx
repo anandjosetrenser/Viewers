@@ -16,13 +16,14 @@ class LabellingFlow extends Component {
         })
       ),
     }),
+    exclusive: PropTypes.bool
   };
+  initialItems = [];
+  currentItems = [];
 
   constructor(props) {
     super(props);
     const { label } = props.measurementData;
-    this.initialItems = props.labelData.items;
-    this.currentItems = cloneDeep(this.initialItems);
     let style = props.componentStyle;
 
     this.state = {
@@ -42,8 +43,8 @@ class LabellingFlow extends Component {
   };
 
   render() {
-    if (this.props.projectConfig && this.props.projectConfig.labels) {
-      this.initialItems = this.props.projectConfig.labels;
+    if (this.props.labelData) {
+      this.initialItems = this.props.labelData;
       this.currentItems = cloneDeep(this.initialItems);
     }
 
@@ -104,6 +105,7 @@ class LabellingFlow extends Component {
         onSelected={this.selectTreeSelectCalback}
         selectTreeFirstTitle="Assign Label"
         onComponentChange={this.repositionComponent}
+        exclusive={this.props.exclusive}
       />
     );
   };

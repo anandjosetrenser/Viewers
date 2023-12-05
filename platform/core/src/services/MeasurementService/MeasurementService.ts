@@ -306,6 +306,7 @@ class MeasurementService extends PubSubService {
     const {
       uiDialogService
     } = this._servicesManager.services;
+    const labelConfig = this.getModeLabelConfing();
     const measurement = this.measurements.get(uid);
     return new Promise<void>((resolve, reject) => {
 
@@ -335,7 +336,8 @@ class MeasurementService extends PubSubService {
           labellingDoneCallback: labellingDoneCallback,
           measurementData: measurement,
           componentStyle: {},
-          labelData: this.getModeLabelConfing()
+          labelData: labelConfig.items,
+          exclusive: labelConfig.exclusive
         },
       });
     });

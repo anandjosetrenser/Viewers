@@ -17,6 +17,7 @@ export class SelectTree extends Component {
     items: PropTypes.array.isRequired,
     /** fn(evt, item) - Called when a child item is selected; receives event and selected item */
     onSelected: PropTypes.func.isRequired,
+    exclusive: PropTypes.bool
   };
 
   static defaultProps = {
@@ -104,7 +105,12 @@ export class SelectTree extends Component {
     let treeItems;
 
     if (this.state.searchTerm) {
-      treeItems = this.filterItems();
+      const filterItems = this.filterItems();
+      if (this.props.exclusive === false && filterItems.find((item) => item.label === this.state.searchTerm) === undefined) {
+        treeItems = [{ label: this.state.searchTerm, value: this.state.searchTerm }, ...filterItems];
+      } else {
+        treeItems = filterItems;
+      }
     } else if (this.state.currentNode) {
       treeItems = cloneDeep(this.state.currentNode.items);
     } else {
