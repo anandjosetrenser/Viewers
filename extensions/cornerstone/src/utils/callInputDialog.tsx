@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Dialog, ButtonEnums } from '@ohif/ui';
+import { Input, Dialog, ButtonEnums, LabellingFlow } from '@ohif/ui';
 
 /**
  *
@@ -18,71 +18,112 @@ function callInputDialog(
   data,
   callback,
   isArrowAnnotateInputDialog = true,
-  dialogConfig: any = {}
+  dialogConfig: any = {},
+  measurementService = null,
 ) {
-  const dialogId = 'dialog-enter-annotation';
-  const label = data ? (isArrowAnnotateInputDialog ? data.text : data.label) : '';
-  const {
-    dialogTitle = 'Annotation',
-    inputLabel = 'Enter your annotation',
-    validateFunc = value => true,
-  } = dialogConfig;
+  if (measurementService === null) {
+    const dialogId = 'dialog-enter-annotation';
+    const label = data ? (isArrowAnnotateInputDialog ? data.text : data.label) : '';
+    const {
+      dialogTitle = 'Annotation',
+      inputLabel = 'Enter your annotation',
+      validateFunc = value => true,
+    } = dialogConfig;
 
-  const onSubmitHandler = ({ action, value }) => {
-    switch (action.id) {
-      case 'save':
-        if (typeof validateFunc === 'function' && !validateFunc(value.label)) {
+    const onSubmitHandler = ({ action, value }) => {
+      switch (action.id) {
+        case 'save':
+          if (typeof validateFunc === 'function' && !validateFunc(value.label)) {
+            return;
+          }
+
+          callback(value.label, action.id);
+          break;
+        case 'cancel':
+          callback('', action.id);
+          break;
+      }
+      uiDialogService.dismiss({ id: dialogId });
+    };
+
+    if (uiDialogService) {
+      uiDialogService.create({
+        id: dialogId,
+        centralize: true,
+        isDraggable: false,
+        showOverlay: true,
+        content: Dialog,
+        contentProps: {
+          title: dialogTitle,
+          value: { label },
+          noCloseButton: true,
+          onClose: () => uiDialogService.dismiss({ id: dialogId }),
+          actions: [
+            { id: 'cancel', text: 'Cancel', type: ButtonEnums.type.secondary },
+            { id: 'save', text: 'Save', type: ButtonEnums.type.primary },
+          ],
+          onSubmit: onSubmitHandler,
+          body: ({ value, setValue }) => {
+            return (
+              <Input
+                autoFocus
+                className="border-primary-main bg-black"
+                type="text"
+                id="annotation"
+                label={inputLabel}
+                labelClassName="text-white text-[14px] leading-[1.2]"
+                value={value.label}
+                onChange={event => {
+                  event.persist();
+                  setValue(value => ({ ...value, label: event.target.value }));
+                }}
+                onKeyPress={event => {
+                  if (event.key === 'Enter') {
+                    onSubmitHandler({ value, action: { id: 'save' } });
+                  }
+                }}
+              />
+            );
+          },
+        },
+      });
+    }
+  } else {
+    const labelConfig = measurementService.getModeLabelConfing();
+    const exclusive = labelConfig ? labelConfig.exclusive : false;
+    const dropDownItems = labelConfig ? labelConfig.items : [];
+
+    const {
+      validateFunc = value => true,
+    } = dialogConfig;
+
+    const labellingDoneCallback = value => {
+      if (typeof value === "string") {
+        if (typeof validateFunc === 'function' && !validateFunc(value)) {
           return;
         }
+        callback(value, 'save');
+      } else {
+        callback('', 'cancel');
+      }
+      uiDialogService.dismiss({ id: 'select-annotation' });
+    };
 
-        callback(value.label, action.id);
-        break;
-      case 'cancel':
-        callback('', action.id);
-        break;
-    }
-    uiDialogService.dismiss({ id: dialogId });
-  };
-
-  if (uiDialogService) {
     uiDialogService.create({
-      id: dialogId,
-      centralize: true,
+      id: 'select-annotation',
       isDraggable: false,
       showOverlay: true,
-      content: Dialog,
+      content: LabellingFlow,
+      defaultPosition: {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      },
       contentProps: {
-        title: dialogTitle,
-        value: { label },
-        noCloseButton: true,
-        onClose: () => uiDialogService.dismiss({ id: dialogId }),
-        actions: [
-          { id: 'cancel', text: 'Cancel', type: ButtonEnums.type.secondary },
-          { id: 'save', text: 'Save', type: ButtonEnums.type.primary },
-        ],
-        onSubmit: onSubmitHandler,
-        body: ({ value, setValue }) => {
-          return (
-            <Input
-              autoFocus
-              className="border-primary-main bg-black"
-              type="text"
-              id="annotation"
-              label={inputLabel}
-              labelClassName="text-white text-[14px] leading-[1.2]"
-              value={value.label}
-              onChange={event => {
-                event.persist();
-                setValue(value => ({ ...value, label: event.target.value }));
-              }}
-              onKeyPress={event => {
-                if (event.key === 'Enter') {
-                  onSubmitHandler({ value, action: { id: 'save' } });
-                }
-              }}
-            />
-          );
-        },
+        labellingDoneCallback: labellingDoneCallback,
+        measurementData: { label: '' },
+        componentStyle: {},
+        labelData: dropDownItems,
+        exclusive: exclusive
       },
     });
   }

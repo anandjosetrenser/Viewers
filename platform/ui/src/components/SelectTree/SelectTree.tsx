@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import SelectTreeBreadcrumb from './SelectTreeBreadcrumb';
 import cloneDeep from 'lodash.clonedeep';
 import Icon from '../Icon';
+import Button, { ButtonEnums } from '../Button';
 
 export class SelectTree extends Component {
   static propTypes = {
@@ -17,7 +18,9 @@ export class SelectTree extends Component {
     items: PropTypes.array.isRequired,
     /** fn(evt, item) - Called when a child item is selected; receives event and selected item */
     onSelected: PropTypes.func.isRequired,
-    exclusive: PropTypes.bool
+    exclusive: PropTypes.bool,
+    closePopup: PropTypes.func,
+    label: PropTypes.string
   };
 
   static defaultProps = {
@@ -31,7 +34,7 @@ export class SelectTree extends Component {
     super(props);
 
     this.state = {
-      searchTerm: null,
+      searchTerm: this.props.items.length > 0 ? null : this.props.label,
       currentNode: null,
       value: null,
     };
@@ -44,7 +47,8 @@ export class SelectTree extends Component {
       <div className="w-80 max-h-80 leading-7 text-base">
         <div className="treeContent bg-primary-dark text-white max-h-80 overflow-hidden flex flex-col border-0 rounded-lg drop-shadow-lg outline-none focus:outline-none relative w-full">
           {this.headerItem()}
-          <div className="overflow-auto h-full ohif-scrollbar">
+
+          {this.props.items.length > 0 && <div className="overflow-auto h-full ohif-scrollbar">
             {this.state.currentNode && (
               <SelectTreeBreadcrumb
                 onSelected={this.onBreadcrumbSelected}
@@ -55,7 +59,7 @@ export class SelectTree extends Component {
             <div className="treeInputsWrapper">
               <div className="treeInputs">{treeItems}</div>
             </div>
-          </div>
+          </div>}
         </div>
       </div>
     );
@@ -138,31 +142,42 @@ export class SelectTree extends Component {
   }
 
   headerItem = () => {
+    const inputLeftPadding = this.props.items.length > 0 ? 'pl-8' : 'pl-4';
     let title = this.props.selectTreeFirstTitle;
     if (this.state.currentNode && this.props.selectTreeSecondTitle) {
       title = this.props.selectTreeSecondTitle;
     }
 
     return (
-      <div className="bg-secondary-main flex flex-col items-center justify-between border-b-2 border-solid border-black p-2 ">
-        <div className="font-bold m-0 leading-tight text-primary-active p-2">
-          {title}
+      <div className="flex flex-col justify-between border-b-2 border-solid border-black p-4 ">
+        <div className="m-0 leading-tight text-primary-active p-2 mb-5">
+          <span className='align-sub text-primary-light text-xl'>{title}</span> <div className='float-right cursor-pointer'><Icon name="icon-close" onClick={() => this.props.closePopup()} fill="#a3a3a3" /></div>
         </div>
         {this.props.searchEnabled && (
           <div className="w-full flex flex-col">
-            <div className="absolute w-4 h-4 mt-2 mr-2.5 mb-3 ml-3">
+            {this.props.items.length > 0 && <div className="absolute w-4 h-4 mt-2 mr-2.5 mb-3 ml-3">
               <Icon name="icon-search" fill="#a3a3a3" />
-            </div>
+            </div>}
             <input
               type="text"
-              className="bg-black border-primary-main shadow transition duration-300 appearance-none border border-primary-main hover:border-gray-500 focus:border-gray-500 focus:outline-none rounded py-2 pl-8 pr-3 text-sm leading-tight focus:outline-none bg-black"
-              placeholder="Search labels"
+              className={`bg-black border-primary-main shadow transition duration-300 appearance-none border border-primary-main hover:border-gray-500 focus:border-gray-500 focus:outline-none rounded py-2 pr-3 text-sm leading-tight focus:outline-none bg-black ${inputLeftPadding}`}
+              placeholder={this.props.items.length > 0 ? "Search labels" : "Enter label"}
               autoFocus={this.props.autoFocus}
               onChange={this.searchLocations}
               value={this.state.searchTerm ? this.state.searchTerm : ''}
             />
+
           </div>
         )}
+        {this.props.items.length === 0 && <div className='flex justify-end py-3'><Button
+          key={0}
+          name="save"
+          type={ButtonEnums.type.primary}
+          onClick={(evt) => { this.props.onSelected(evt, { label: this.state.searchTerm, value: this.state.searchTerm }); }}
+        >
+          Save
+        </Button>
+        </div>}
       </div>
     );
   };

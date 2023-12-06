@@ -307,18 +307,22 @@ class MeasurementService extends PubSubService {
       uiDialogService
     } = this._servicesManager.services;
     const labelConfig = this.getModeLabelConfing();
+    const exclusive = labelConfig ? labelConfig.exclusive : false;
+    const dropDownItems = labelConfig ? labelConfig.items : [];
     const measurement = this.measurements.get(uid);
     return new Promise<void>((resolve, reject) => {
 
       const labellingDoneCallback = value => {
-        measurement.label = value;
-        this.update(
-          uid,
-          {
-            ...measurement,
-          },
-          true
-        );
+        if (typeof value === "string") {
+          measurement.label = value;
+          this.update(
+            uid,
+            {
+              ...measurement,
+            },
+            true
+          );
+        }
         uiDialogService.dismiss({ id: 'select-annotation' });
         resolve();
       };
@@ -336,8 +340,8 @@ class MeasurementService extends PubSubService {
           labellingDoneCallback: labellingDoneCallback,
           measurementData: measurement,
           componentStyle: {},
-          labelData: labelConfig.items,
-          exclusive: labelConfig.exclusive
+          labelData: dropDownItems,
+          exclusive: exclusive
         },
       });
     });

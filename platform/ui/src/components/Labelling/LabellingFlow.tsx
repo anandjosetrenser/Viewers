@@ -81,8 +81,7 @@ class LabellingFlow extends Component {
     );
   }
 
-  selectTreeSelectCalback = (event, itemSelected) => {
-    const label = itemSelected.value;
+  closePopup = () => {
     this.setState({
       displayComponent: false,
     });
@@ -94,6 +93,11 @@ class LabellingFlow extends Component {
         });
       }, 2000);
     }
+  }
+
+  selectTreeSelectCalback = (event, itemSelected) => {
+    const label = itemSelected.value;
+    this.closePopup();
     return this.props.labellingDoneCallback(label);
   };
 
@@ -103,9 +107,11 @@ class LabellingFlow extends Component {
         items={this.currentItems}
         columns={1}
         onSelected={this.selectTreeSelectCalback}
-        selectTreeFirstTitle="Assign Label"
+        closePopup={this.closePopup}
+        selectTreeFirstTitle="Annotation"
         onComponentChange={this.repositionComponent}
         exclusive={this.props.exclusive}
+        label={this.state.label}
       />
     );
   };

@@ -132,26 +132,7 @@ function commandsModule({
      * on the measurement with a response if not cancelled.
      */
     setMeasurementLabel: ({ uid }) => {
-      const modeLabelConfig = measurementService.getModeLabelConfing();
-      if (modeLabelConfig) {
-        measurementService.showLabelAnnotationPopup(uid);
-      } else {
-        const measurement = measurementService.getMeasurement(uid);
-        callInputDialog(
-          uiDialogService,
-          measurement,
-          (label, actionId) => {
-            if (actionId === 'cancel') {
-              return;
-            }
-            const updatedMeasurement = Object.assign({}, measurement, {
-              label,
-            });
-            measurementService.update(updatedMeasurement.uid, updatedMeasurement, true);
-          },
-          false
-        );
-      }
+      measurementService.showLabelAnnotationPopup(uid);
     },
 
     /**
@@ -226,8 +207,8 @@ function commandsModule({
 
       viewportGridService.setActiveViewportId(viewportId);
     },
-    arrowTextCallback: ({ callback, data }) => {
-      callInputDialog(uiDialogService, data, callback);
+    arrowTextCallback: ({ callback, data, uid }) => {
+      callInputDialog(uiDialogService, data, callback, true, {}, measurementService);
     },
     cleanUpCrosshairs: () => {
       // if the crosshairs tool is active, deactivate it and set window level active
