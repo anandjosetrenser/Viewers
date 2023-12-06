@@ -169,14 +169,16 @@ export class SelectTree extends Component {
 
           </div>
         )}
-        {this.props.items.length === 0 && <div className='flex justify-end py-3'><Button
-          key={0}
-          name="save"
-          type={ButtonEnums.type.primary}
-          onClick={(evt) => { this.props.onSelected(evt, { label: this.state.searchTerm, value: this.state.searchTerm }); }}
-        >
-          Save
-        </Button>
+        {this.props.items.length === 0 && <div className='flex justify-end py-3'>
+          <Button
+            disabled={this.state.searchTerm === ''}
+            key={0}
+            name="save"
+            type={ButtonEnums.type.primary}
+            onClick={(evt) => { this.props.onSelected(evt, { label: this.state.searchTerm, value: this.state.searchTerm }); }}
+          >
+            Save
+          </Button>
         </div>}
       </div>
     );
