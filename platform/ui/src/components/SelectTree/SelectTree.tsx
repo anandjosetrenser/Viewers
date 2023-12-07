@@ -20,7 +20,7 @@ export class SelectTree extends Component {
     onSelected: PropTypes.func.isRequired,
     exclusive: PropTypes.bool,
     closePopup: PropTypes.func,
-    label: PropTypes.string
+    label: PropTypes.string,
   };
 
   static defaultProps = {
@@ -44,22 +44,24 @@ export class SelectTree extends Component {
     const treeItems = this.getTreeItems();
 
     return (
-      <div className="w-80 max-h-80 leading-7 text-base">
-        <div className="treeContent bg-primary-dark text-white max-h-80 overflow-hidden flex flex-col border-0 rounded-lg drop-shadow-lg outline-none focus:outline-none relative w-full">
+      <div className="max-h-80 w-80 text-base leading-7">
+        <div className="treeContent bg-primary-dark relative flex max-h-80 w-full flex-col overflow-hidden rounded-lg border-0 text-white outline-none drop-shadow-lg focus:outline-none">
           {this.headerItem()}
 
-          {this.props.items.length > 0 && <div className="overflow-auto h-full ohif-scrollbar">
-            {this.state.currentNode && (
-              <SelectTreeBreadcrumb
-                onSelected={this.onBreadcrumbSelected}
-                label={this.state.currentNode.label}
-                value={this.state.currentNode.value}
-              />
-            )}
-            <div className="treeInputsWrapper">
-              <div className="treeInputs">{treeItems}</div>
+          {this.props.items.length > 0 && (
+            <div className="ohif-scrollbar h-full overflow-auto">
+              {this.state.currentNode && (
+                <SelectTreeBreadcrumb
+                  onSelected={this.onBreadcrumbSelected}
+                  label={this.state.currentNode.label}
+                  value={this.state.currentNode.value}
+                />
+              )}
+              <div className="treeInputsWrapper">
+                <div className="treeInputs">{treeItems}</div>
+              </div>
             </div>
-          </div>}
+          )}
         </div>
       </div>
     );
@@ -110,8 +112,14 @@ export class SelectTree extends Component {
 
     if (this.state.searchTerm) {
       const filterItems = this.filterItems();
-      if (this.props.exclusive === false && filterItems.find((item) => item.label === this.state.searchTerm) === undefined) {
-        treeItems = [{ label: this.state.searchTerm, value: this.state.searchTerm }, ...filterItems];
+      if (
+        this.props.exclusive === false &&
+        filterItems.find(item => item.label === this.state.searchTerm) === undefined
+      ) {
+        treeItems = [
+          { label: this.state.searchTerm, value: this.state.searchTerm },
+          ...filterItems,
+        ];
       } else {
         treeItems = filterItems;
       }
@@ -150,36 +158,55 @@ export class SelectTree extends Component {
 
     return (
       <div className="flex flex-col justify-between border-b-2 border-solid border-black p-4 ">
-        <div className="m-0 leading-tight text-primary-active p-2 mb-5">
-          <span className='align-sub text-primary-light text-xl'>{title}</span> <div className='float-right cursor-pointer'><Icon name="icon-close" onClick={() => this.props.closePopup()} fill="#a3a3a3" /></div>
+        <div className="text-primary-active m-0 mb-5 p-2 leading-tight">
+          <span className="text-primary-light align-sub text-xl">{title}</span>
+          <div className="float-right">
+            <Icon
+              name="icon-close"
+              className="cursor-pointer"
+              onClick={() => this.props.closePopup()}
+              fill="#a3a3a3"
+            />
+          </div>
         </div>
         {this.props.searchEnabled && (
-          <div className="w-full flex flex-col">
-            {this.props.items.length > 0 && <div className="absolute w-4 h-4 mt-2 mr-2.5 mb-3 ml-3">
-              <Icon name="icon-search" fill="#a3a3a3" />
-            </div>}
+          <div className="flex w-full flex-col">
+            {this.props.items.length > 0 && (
+              <div className="absolute mt-2 mr-2.5 mb-3 ml-3 h-4 w-4">
+                <Icon
+                  name="icon-search"
+                  fill="#a3a3a3"
+                />
+              </div>
+            )}
             <input
               type="text"
-              className={`bg-black border-primary-main shadow transition duration-300 appearance-none border border-primary-main hover:border-gray-500 focus:border-gray-500 focus:outline-none rounded py-2 pr-3 text-sm leading-tight focus:outline-none bg-black ${inputLeftPadding}`}
-              placeholder={this.props.items.length > 0 ? "Search labels" : "Enter label"}
+              className={`border-primary-main border-primary-main appearance-none rounded border bg-black bg-black py-2 pr-3 text-sm leading-tight shadow transition duration-300 hover:border-gray-500 focus:border-gray-500 focus:outline-none focus:outline-none ${inputLeftPadding}`}
+              placeholder={this.props.items.length > 0 ? 'Search labels' : 'Enter label'}
               autoFocus={this.props.autoFocus}
               onChange={this.searchLocations}
               value={this.state.searchTerm ? this.state.searchTerm : ''}
             />
-
           </div>
         )}
-        {this.props.items.length === 0 && <div className='flex justify-end py-3'>
-          <Button
-            disabled={this.state.searchTerm === ''}
-            key={0}
-            name="save"
-            type={ButtonEnums.type.primary}
-            onClick={(evt) => { this.props.onSelected(evt, { label: this.state.searchTerm, value: this.state.searchTerm }); }}
-          >
-            Save
-          </Button>
-        </div>}
+        {this.props.items.length === 0 && (
+          <div className="flex justify-end py-3">
+            <Button
+              disabled={this.state.searchTerm === ''}
+              key={0}
+              name="save"
+              type={ButtonEnums.type.primary}
+              onClick={evt => {
+                this.props.onSelected(evt, {
+                  label: this.state.searchTerm,
+                  value: this.state.searchTerm,
+                });
+              }}
+            >
+              Save
+            </Button>
+          </div>
+        )}
       </div>
     );
   };
